@@ -45,6 +45,8 @@ from sos_lib import (DataError, die, load_basket, load_volumes, merge_volumes,
 def fetch_csv(keywords: list[str], args) -> dict[tuple[str, str], int]:
     if not args.file:
         die("--provider csv requires --file")
+    if not Path(args.file).is_file():
+        die(f"csv file not found: {args.file}")
     mapping = {"keyword": "keyword", "month": "month", "volume": "volume"}
     for m in args.map or []:
         if "=" not in m:
@@ -68,6 +70,9 @@ def fetch_csv(keywords: list[str], args) -> dict[tuple[str, str], int]:
                 continue
             m = month_key(row[mapping["month"]])
             v = parse_volume(row[mapping["volume"]], context=f"(row {i})")
+            if (kw, m) in out and out[(kw, m)] != v:
+                raise DataError(f"conflicting duplicate rows for {kw!r} {m}: "
+                                f"{out[(kw, m)]} vs {v} (row {i})")
             out[(kw, m)] = v
     if skipped:
         print(f"csv: skipped {skipped} rows for keywords outside the basket", file=sys.stderr)
@@ -123,8 +128,10 @@ def fetch_dataforseo(keywords: list[str], args) -> dict[tuple[str, str], int]:
             raw_items.append(item)
             kw = item["keyword"].strip().lower()
             for ms in item.get("monthly_searches") or []:
+                if ms.get("search_volume") is None:
+                    continue  # null = no data — must surface as a coverage gap, not a fake 0
                 m = f"{ms['year']:04d}-{ms['month']:02d}"
-                out[(kw, m)] = int(ms.get("search_volume") or 0)
+                out[(kw, m)] = int(ms["search_volume"])
     _dump_raw(args.workspace, "dataforseo", raw_items)
     return out
 
@@ -190,8 +197,15 @@ def fetch_keyword_planner(keywords: list[str], args) -> dict[tuple[str, str], in
 def _dump_raw(workspace: Path, provider: str, items: list) -> None:
     runs = workspace / "runs"
     runs.mkdir(parents=True, exist_ok=True)
-    months = sorted({i["month"] for i in items if isinstance(i, dict) and "month" in i})
-    stamp = months[-1] if months else "unknown"
+    stamps = set()
+    for i in items:
+        if not isinstance(i, dict):
+            continue
+        if "month" in i:
+            stamps.add(i["month"])
+        for ms in i.get("monthly_searches") or []:
+            stamps.add(f"{ms['year']:04d}-{ms['month']:02d}")
+    stamp = max(stamps) if stamps else "run"
     path = runs / f"{provider}-{stamp}.json"
     path.write_text(json.dumps(items, indent=2, sort_keys=True, ensure_ascii=False),
                     encoding="utf-8")
@@ -221,7 +235,16 @@ def main() -> None:
                     help="keyword-planner languageConstant id (default 1015 = Swedish)")
     args = ap.parse_args()
 
-    basket = load_basket(args.workspace / "basket.json")
+    try:
+        basket = load_basket(args.workspace / "basket.json")
+    except DataError as e:
+        die(str(e))
+    if (args.provider in ("dataforseo", "keyword-planner")
+            and str(basket.get("geo", "")).upper() != "SE"
+            and args.dfs_location == 2752 and args.geo_target == "2752"):
+        die(f"basket geo is {basket.get('geo')!r} but the provider location flags are at "
+            "their Sweden defaults — pass --dfs-location/--language (dataforseo) or "
+            "--geo-target/--language-constant (keyword-planner) for your market")
     keywords = sorted({k["keyword"].strip().lower() for k in basket["keywords"]})
     try:
         fresh = PROVIDERS[args.provider](keywords, args)

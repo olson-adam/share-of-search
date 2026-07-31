@@ -6,7 +6,7 @@ regenerating always yields byte-identical files, and running sos_calc on the
 result reproduces the exact numbers shown in the app and README.
 
     python3 examples/make_demo.py
-    python3 scripts/sos_calc.py --workspace examples/demo-workspace --source keyword-planner
+    python3 scripts/sos_calc.py --workspace examples/demo-workspace --source demo
 """
 from __future__ import annotations
 

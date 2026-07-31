@@ -17,20 +17,23 @@ your brand, or a typo for something else? The queries Google actually matched
 to your site settle it.
 
 Output: <workspace>/gsc.csv  (month, brand, clicks, impressions, position)
-plus a "-site-total-" row per month for context.
+plus a "-site-total-" row per month for context. Note: GSC withholds some
+anonymized long-tail queries entirely, so the total covers returned queries,
+not every impression the site ever had.
 """
 from __future__ import annotations
 
 import argparse
 import csv
 import json
+import re
 import sys
 from datetime import date
 from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 from google_auth import access_token, api_get, api_post
-from sos_lib import GENERIC_BRAND, die, load_basket
+from sos_lib import DataError, GENERIC_BRAND, die, load_basket
 
 API = "https://www.googleapis.com/webmasters/v3"
 
@@ -73,18 +76,30 @@ def main() -> None:
     if not args.workspace or not args.site:
         ap.error("--workspace and --site are required (or use --list-sites)")
 
-    basket = load_basket(args.workspace / "basket.json")
+    try:
+        basket = load_basket(args.workspace / "basket.json")
+    except DataError as e:
+        die(str(e))
     brands = sorted({k["brand"] for k in basket["keywords"] if k["brand"] != GENERIC_BRAND})
-    brand_tokens = {b: b.lower() for b in brands}
+    # word-boundary match: "ace" must not swallow "menace" or "palace hotel";
+    # a query naming several brands counts for each of them
+    brand_res = {b: re.compile(rf"\b{re.escape(b.lower())}\b") for b in brands}
 
     rows: list[dict] = []
     query_dump: dict[str, list] = {}
     site_enc = args.site.replace(":", "%3A").replace("/", "%2F")
     for key, first, last in month_bounds(args.months):
-        body = {"startDate": first, "endDate": last, "dimensions": ["query"],
-                "rowLimit": 25000, "dataState": "final"}
-        resp = api_post(f"{API}/sites/{site_enc}/searchAnalytics/query", token, body)
-        data = resp.get("rows", [])
+        data = []
+        start_row = 0
+        while True:  # GSC caps each page at 25k rows — paginate, don't truncate
+            body = {"startDate": first, "endDate": last, "dimensions": ["query"],
+                    "rowLimit": 25000, "startRow": start_row, "dataState": "final"}
+            resp = api_post(f"{API}/sites/{site_enc}/searchAnalytics/query", token, body)
+            page = resp.get("rows", [])
+            data.extend(page)
+            if len(page) < 25000:
+                break
+            start_row += len(page)
         per_brand = {b: {"clicks": 0, "impressions": 0, "pos_w": 0.0} for b in brands}
         tot = {"clicks": 0, "impressions": 0}
         matched = []
@@ -92,15 +107,14 @@ def main() -> None:
             q = r["keys"][0].lower()
             tot["clicks"] += r.get("clicks", 0)
             tot["impressions"] += r.get("impressions", 0)
-            for b, tokk in brand_tokens.items():
-                if tokk in q:
+            for b, rx in brand_res.items():
+                if rx.search(q):
                     per_brand[b]["clicks"] += r.get("clicks", 0)
                     per_brand[b]["impressions"] += r.get("impressions", 0)
                     per_brand[b]["pos_w"] += r.get("position", 0) * r.get("impressions", 0)
                     matched.append({"query": r["keys"][0], "brand": b,
                                     "clicks": r.get("clicks", 0),
                                     "impressions": r.get("impressions", 0)})
-                    break
         for b in brands:
             p = per_brand[b]
             pos = round(p["pos_w"] / p["impressions"], 1) if p["impressions"] else ""

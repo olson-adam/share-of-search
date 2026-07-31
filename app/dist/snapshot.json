@@ -58,6 +58,7 @@
       "volume": 1386
     }
   ],
+  "brands_without_data": [],
   "capture": {
     "branded_share_of_site_impressions": [
       36.1,
@@ -386,7 +387,8 @@
   "focus": {
     "delta_quarter": 0.5,
     "delta_year": 2.6,
-    "gap_to_2": 17.8,
+    "gap_up": 17.8,
+    "lead_over_2": null,
     "of": 4,
     "rank": 3,
     "share": 13.1,
@@ -505,6 +507,27 @@
       "type": "Branded"
     }
   ],
+  "movers_note": null,
+  "product_unbranded_volume": [
+    1564,
+    1592,
+    1621,
+    1650,
+    1679,
+    1708,
+    1737,
+    1767,
+    1796,
+    1826,
+    1856,
+    1886,
+    1917,
+    1947,
+    1978,
+    2009,
+    2040,
+    2072
+  ],
   "shares": {
     "Acme": [
       9.6,
@@ -587,7 +610,7 @@
       47.8
     ]
   },
-  "source": "keyword-planner",
+  "source": "demo",
   "validation": {
     "errors": [],
     "stats": {

@@ -46,8 +46,16 @@ def main() -> None:
     if not args.workspace or not args.property:
         ap.error("--workspace and --property are required (or use --list-properties)")
 
+    # explicit first-of-month start — a "N*31daysAgo" approximation would land
+    # mid-month and put a fake trough at the left edge of every trend
+    from datetime import date
+    y, mo = date.today().year, date.today().month
+    for _ in range(args.months):
+        mo -= 1
+        if mo == 0:
+            y, mo = y - 1, 12
     body = {
-        "dateRanges": [{"startDate": f"{args.months * 31}daysAgo", "endDate": "yesterday"}],
+        "dateRanges": [{"startDate": f"{y:04d}-{mo:02d}-01", "endDate": "yesterday"}],
         "dimensions": [{"name": "yearMonth"}],
         "metrics": [{"name": "sessions"}, {"name": "engagedSessions"},
                     {"name": "keyEvents"}],
@@ -71,7 +79,6 @@ def main() -> None:
                      "key_events": int(float(vals[2])), "property": args.property})
     rows.sort(key=lambda x: x["month"])
     # drop the partial current month for the same reason GSC does
-    from datetime import date
     current = f"{date.today().year:04d}-{date.today().month:02d}"
     rows = [r for r in rows if r["month"] != current]
 

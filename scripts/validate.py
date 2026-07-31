@@ -77,14 +77,23 @@ def validate(basket_path: Path, volumes_path: Path) -> dict:
         warnings.append("keywords with partial month coverage: "
                         + ", ".join(incomplete[:5]) + ("…" if len(incomplete) > 5 else ""))
 
-    # 4. outlier jumps — >8x month-over-month is nearly always a data problem
+    # 4. outlier jumps — >8x month-over-month is nearly always a data problem.
+    # Guard on max(), not both sides: a value MANGLED DOWNWARD (the 8 900→8 bug
+    # this tool exists to catch) makes the small side tiny — requiring both
+    # sides ≥50 would skip exactly that case.
     for kw in sorted(vol_kws & set(kws)):
         series = sorted(((m, v) for (k, m), v in volumes.items() if k == kw))
         for (m0, v0), (m1, v1) in zip(series, series[1:]):
-            if v0 >= 50 and v1 >= 50 and max(v0, v1) / max(1, min(v0, v1)) > 8:
+            if max(v0, v1) >= 50 and max(v0, v1) / max(1, min(v0, v1)) > 8:
                 warnings.append(f"outlier jump for {kw!r}: {v0} ({m0}) → {v1} ({m1})")
 
-    # 5. branded demand must exist — otherwise share-of-branded is undefined
+    # 5. thin history — deltas and movers need runway, and short series make
+    # confident-looking numbers out of noise
+    if len(months) < 6:
+        warnings.append(f"only {len(months)} month(s) of history — deltas, movers and "
+                        "trends are unreliable below ~6 months")
+
+    # 6. branded demand must exist — otherwise share-of-branded is undefined
     last = months[-1]
     branded_last = sum(v for (k, m), v in volumes.items()
                        if m == last and k in kws and kws[k]["brand"] != GENERIC_BRAND)

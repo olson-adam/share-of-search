@@ -13,9 +13,13 @@ export type Snapshot = {
   branded_volume_total: number[];
   generic_share_of_total: number[];
   focus: { share: number; delta_quarter: number | null; delta_year: number | null;
-           rank: number; of: number; gap_to_2: number | null; volume: number };
+           rank: number; of: number; gap_up: number | null;
+           lead_over_2: number | null; volume: number };
   brands: Brand[];
+  brands_without_data: string[];
+  product_unbranded_volume: number[];
   movers: Mover[];
+  movers_note: string | null;
   basket: { keywords: number; version: string };
   validation: { errors: string[]; warnings: string[];
                 stats: { months?: number; rows?: number; first_month?: string; last_month?: string } };

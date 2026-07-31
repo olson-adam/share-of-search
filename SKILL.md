@@ -15,9 +15,10 @@ tool says so.
 
 1. **Market demand** (this skill, v1): how much branded demand exists and whose name is on
    it. Comparable across competitors because search volumes are public.
-2. **Owned capture** (roadmap): your GSC impressions/clicks on that demand — never call
-   this market share; GSC sees only your own site.
-3. **Business yield** (roadmap): what captured demand produces in GA4.
+2. **In the search results** (`scripts/gsc_capture.py`): your GSC impressions/clicks on
+   that demand — never call this market share; GSC sees only your own site.
+3. **On your site** (`scripts/ga4_yield.py`): what organic search produces in GA4 —
+   GA4 has no query dimension, so this is never "revenue from brand searches".
 
 Generic demand ("crm tools", "pipeline software") belongs to **no one** — it is tracked as
 a parallel pool, never counted as a competitor.
@@ -30,6 +31,8 @@ User data lives in a workspace directory (default `sos-workspace/`), never in th
 sos-workspace/
 ├── basket.json     # the category definition — keywords tagged brand + type
 ├── volumes.csv     # monthly history (merge-preserving: refreshes never delete)
+├── gsc.csv         # optional layer 2 (gsc_capture.py)
+├── ga4.csv         # optional layer 3 (ga4_yield.py)
 ├── runs/           # raw provider responses, kept for auditability
 └── snapshot.json   # computed output — feeds the dashboard and any report
 ```
@@ -44,14 +47,19 @@ Python 3.11+ stdlib only for the core. Providers:
   Cost is printed on every call.
 - **csv** (no accounts): import any export; columns are mapped with `--map`.
 
-Dashboard: `cd app && npm install && npm run dev` (reads `app/public/snapshot.json`).
+Layers 2–3 (optional): `gsc_capture.py --list-sites` / `ga4_yield.py --list-properties`
+use their own read-only OAuth token (one browser consent; never touches gcloud ADC).
+
+Dashboard: ships prebuilt — `python3 scripts/serve.py --workspace ws/` opens it locally,
+no Node needed. Node is only required to modify the app itself.
 
 ## The monthly loop
 
 ```bash
 python3 scripts/fetch_volumes.py --workspace ws/ --provider keyword-planner
 python3 scripts/sos_calc.py --workspace ws/ --source keyword-planner
-cp ws/snapshot.json app/public/snapshot.json   # dashboard now shows the new month
+python3 scripts/serve.py --workspace ws/                       # view the new month
+python3 scripts/serve.py --workspace ws/ --export report.html  # one shareable file
 ```
 
 `sos_calc` runs validation first and **refuses to produce a snapshot on errors** — never
@@ -60,7 +68,7 @@ validation exists because a locale-blind parser once read "8 900" as 8 and infla
 brand's share 3× on a live dashboard. Cron recipe for a monthly refresh:
 
 ```
-0 7 3 * * cd $HOME/sos && python3 scripts/fetch_volumes.py --workspace ws --provider keyword-planner && python3 scripts/sos_calc.py --workspace ws --source keyword-planner && cp ws/snapshot.json app/public/snapshot.json
+0 7 3 * * cd $HOME/sos && python3 scripts/fetch_volumes.py --workspace ws --provider keyword-planner && python3 scripts/sos_calc.py --workspace ws --source keyword-planner && python3 scripts/serve.py --workspace ws --export $HOME/reports/sos-$(date +\%Y-\%m).html
 ```
 
 ## Building a basket (the judgment step — never fully automated)
@@ -68,14 +76,15 @@ brand's share 3× on a live dashboard. Cron recipe for a monthly refresh:
 The share number is only as good as the basket. Two paths:
 
 1. **Suggest + tag** (recommended): `scripts/basket_builder.py suggest --brands "A,B,C"
-   --terms "crm,pipeline"` fetches real volumes for brand/term candidates via DataForSEO
+   --terms "crm,pipeline" --out candidates.json` fetches real volumes for brand/term
+   candidates via DataForSEO (PAID — it asks before billing; `--yes` for cron)
    and writes the ones with volume. Then tag each candidate WITH the user — the
    `suggested_*` fields are guesses, not decisions. Ask especially about
    **Product Unbranded**: product names searched without their brand ("ws alert",
    "pipeline pro") — only someone who knows the products can spot these, and missing them
    understates the brands that own those products.
-2. **Bring your own**: the user supplies keywords; you tag together, then
-   `basket_builder.py check basket.json`.
+2. **Bring your own**: `basket_builder.py init ws/` writes a template; the user supplies
+   keywords; you tag together, then `basket_builder.py check ws/basket.json`.
 
 Basket rules the loader enforces: Branded keywords carry a brand; Generic and
 Product Unbranded carry `-`; no duplicates; the focus brand must have keywords.

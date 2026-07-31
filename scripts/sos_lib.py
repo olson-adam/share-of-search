@@ -34,13 +34,21 @@ class DataError(ValueError):
 
 
 def parse_volume(raw: str | int | float, *, context: str = "") -> int:
+    if isinstance(raw, bool):
+        raise DataError(f"boolean is not a volume {context}")
     if isinstance(raw, (int, float)):
+        if raw != raw or raw in (float("inf"), float("-inf")):
+            raise DataError(f"non-finite volume {raw!r} {context}")
         if raw < 0:
             raise DataError(f"negative volume {raw!r} {context}")
+        if float(raw) != int(raw):
+            raise DataError(f"non-integer volume {raw!r} {context}")
         return int(raw)
     s = str(raw).strip()
     if not s:
         raise DataError(f"empty volume {context}")
+    # spreadsheet round-trips emit integer-valued decimals ("1200.0", "1 200,00")
+    s = re.sub(r"[.,]0+$", "", s)
     cleaned = _CLEAN_RE.sub("", s)
     if not cleaned.isdigit():
         raise DataError(f"unparseable volume {raw!r} {context}")
@@ -48,7 +56,10 @@ def parse_volume(raw: str | int | float, *, context: str = "") -> int:
     # reading of the original; "8 900" -> 8900 is fine, "8,9" -> 89 is not
     if re.search(r"[.,]\d{1,2}$", s):
         raise DataError(f"ambiguous decimal-looking volume {raw!r} {context}")
-    return int(cleaned)
+    try:
+        return int(cleaned)
+    except ValueError:
+        raise DataError(f"unparseable volume {raw!r} {context}")
 
 
 def month_key(m: str) -> str:
@@ -80,7 +91,13 @@ def month_label(m: str) -> str:
 # ---------- basket ----------
 
 def load_basket(path: Path) -> dict:
-    basket = json.loads(path.read_text(encoding="utf-8"))
+    if not path.exists():
+        raise DataError(f"no basket at {path} — create one (see examples/demo-workspace/"
+                        "basket.json for the schema, or run basket_builder.py init)")
+    try:
+        basket = json.loads(path.read_text(encoding="utf-8"))
+    except json.JSONDecodeError as e:
+        raise DataError(f"basket at {path} is not valid JSON: {e}")
     for field in ("category", "geo", "language", "focus_brand", "keywords"):
         if field not in basket:
             raise DataError(f"basket missing field {field!r}")

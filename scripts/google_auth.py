@@ -16,8 +16,10 @@ from __future__ import annotations
 
 import http.server
 import json
+import os
 import secrets
 import sys
+import urllib.error
 import threading
 import urllib.parse
 import urllib.request
@@ -34,8 +36,7 @@ REDIRECT_PORT = 8123
 def _client() -> tuple[str, str]:
     if not ADC_PATH.exists():
         raise SystemExit("error: no gcloud ADC found — run `gcloud auth application-default "
-                         "login` once (any account) so a client id is available, or place "
-                         "client_id/client_secret in " + str(TOKEN_PATH))
+                         "login` once (any account) so an OAuth client id is available")
     adc = json.loads(ADC_PATH.read_text())
     return adc["client_id"], adc["client_secret"]
 
@@ -96,16 +97,21 @@ def access_token() -> str:
     client_id, client_secret = _client()
     stored = json.loads(TOKEN_PATH.read_text()) if TOKEN_PATH.exists() else {}
     if stored.get("refresh_token"):
-        tok = _token_request({"refresh_token": stored["refresh_token"],
-                              "client_id": client_id, "client_secret": client_secret,
-                              "grant_type": "refresh_token"})
-        if "access_token" in tok:
-            return tok["access_token"]
+        try:
+            tok = _token_request({"refresh_token": stored["refresh_token"],
+                                  "client_id": client_id, "client_secret": client_secret,
+                                  "grant_type": "refresh_token"})
+            if "access_token" in tok:
+                return tok["access_token"]
+        except urllib.error.HTTPError:
+            pass  # revoked/expired token answers 400 (RFC 6749 §5.2) — re-consent
         print("stored token no longer valid — re-consenting…", file=sys.stderr)
     tok = _consent_flow(client_id, client_secret)
-    TOKEN_PATH.parent.mkdir(parents=True, exist_ok=True)
-    TOKEN_PATH.write_text(json.dumps({"refresh_token": tok["refresh_token"]}, indent=2))
-    TOKEN_PATH.chmod(0o600)
+    TOKEN_PATH.parent.mkdir(parents=True, exist_ok=True, mode=0o700)
+    os.chmod(TOKEN_PATH.parent, 0o700)
+    fd = os.open(TOKEN_PATH, os.O_WRONLY | os.O_CREAT | os.O_TRUNC, 0o600)
+    with os.fdopen(fd, "w") as f:
+        f.write(json.dumps({"refresh_token": tok["refresh_token"]}, indent=2))
     print(f"token stored → {TOKEN_PATH}", file=sys.stderr)
     return tok["access_token"]
 

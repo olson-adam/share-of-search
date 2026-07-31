@@ -4,6 +4,7 @@
     python3 scripts/basket_builder.py suggest --brands "Acme,Zenith" \
         --terms "crm,pipeline" --out candidates.json [--dfs-location 2752 --language sv]
     python3 scripts/basket_builder.py check basket.json
+    python3 scripts/basket_builder.py init sos-workspace/
 
 `suggest` generates candidate keywords (brand names alone + brand×term
 combinations), fetches real volumes for them via DataForSEO search_volume
@@ -54,6 +55,11 @@ def cmd_suggest(args) -> None:
     if not brands:
         die("--brands is required (comma-separated)")
     kws = candidates_for(brands, terms)
+    if not args.yes:
+        print(f"about to fetch volumes for {len(kws)} candidates via DataForSEO "
+              "(PAID — roughly $0.05–0.10 per run at this size).", file=sys.stderr)
+        if input("continue? [y/N] ").strip().lower() not in ("y", "yes"):
+            die("aborted — nothing was billed", code=1)
     print(f"fetching volumes for {len(kws)} candidates…", file=sys.stderr)
 
     class A:  # minimal arg shim for the connector
@@ -87,6 +93,31 @@ def cmd_suggest(args) -> None:
           + (f" · {dropped} dropped (no volume)" if dropped else ""))
 
 
+TEMPLATE = {
+    "category": "your category, e.g. hearing protection",
+    "geo": "SE",
+    "language": "sv",
+    "focus_brand": "YourBrand",
+    "version": "1",
+    "keywords": [
+        {"keyword": "yourbrand", "brand": "YourBrand", "type": "Branded"},
+        {"keyword": "competitor", "brand": "Competitor", "type": "Branded"},
+        {"keyword": "category term", "brand": "-", "type": "Generic"},
+        {"keyword": "product name searched without brand", "brand": "-",
+         "type": "Product Unbranded"},
+    ],
+}
+
+
+def cmd_init(args) -> None:
+    out = args.workspace / "basket.json"
+    if out.exists():
+        die(f"{out} already exists — refusing to overwrite")
+    dump_json(TEMPLATE, out)
+    print(f"template basket → {out}\nedit it (real brands, real keywords), then: "
+          f"basket_builder.py check {out}")
+
+
 def cmd_check(args) -> None:
     try:
         basket = load_basket(args.basket)
@@ -116,12 +147,17 @@ def main() -> None:
     s.add_argument("--terms", default="", help="comma-separated category terms")
     s.add_argument("--out", type=Path, default=Path("candidates.json"))
     s.add_argument("--min-volume", type=int, default=10)
+    s.add_argument("--yes", action="store_true",
+                   help="skip the paid-API confirmation prompt (for cron)")
     s.add_argument("--dfs-location", type=int, default=2752)
     s.add_argument("--language", default="sv")
     s.set_defaults(fn=cmd_suggest)
     c = sub.add_parser("check", help="validate a basket file")
     c.add_argument("basket", type=Path)
     c.set_defaults(fn=cmd_check)
+    i = sub.add_parser("init", help="write a template basket.json to a workspace")
+    i.add_argument("workspace", type=Path)
+    i.set_defaults(fn=cmd_init)
     args = ap.parse_args()
     args.fn(args)
 

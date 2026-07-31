@@ -40,7 +40,7 @@ python3 scripts/fetch_volumes.py --workspace ws/ --provider dataforseo
 ```
 
 **C. You have Google Ads API access (agencies, in-house teams).**
-Developer token in `~/google-ads.yaml`, gcloud ADC for OAuth:
+Developer token in `~/google-ads.yaml`, gcloud ADC for OAuth. This is the one path that needs a package (`pip install google-ads`):
 
 ```bash
 python3 scripts/fetch_volumes.py --workspace ws/ --provider keyword-planner --customer-id 1234567890
@@ -52,12 +52,28 @@ All providers merge into the same history file — refreshes never delete old mo
 
 Your share number is only as good as the keyword basket that defines the category. The schema is three types: **Branded** (carries a brand), **Generic** ("crm tools" — owned by no one), and **Product Unbranded** — product names searched *without* their brand ("neo 85"). That last type is the one every SoS setup misses, and missing it understates whichever brand owns those products.
 
+A basket is one JSON file:
+
+```json
+{
+  "category": "hearing protection", "geo": "SE", "language": "sv",
+  "focus_brand": "Acme", "version": "1",
+  "keywords": [
+    {"keyword": "acme",        "brand": "Acme",   "type": "Branded"},
+    {"keyword": "zenith",      "brand": "Zenith", "type": "Branded"},
+    {"keyword": "ear defenders", "brand": "-",    "type": "Generic"},
+    {"keyword": "neo 85",      "brand": "-",      "type": "Product Unbranded"}
+  ]
+}
+```
+
 ```bash
-python3 scripts/basket_builder.py suggest --brands "Acme,Rival,Third" --terms "crm,pipeline"
+python3 scripts/basket_builder.py init ws/            # writes this template to ws/basket.json
+python3 scripts/basket_builder.py suggest --brands "Acme,Rival,Third" --terms "crm,pipeline" --out candidates.json
 python3 scripts/basket_builder.py check ws/basket.json
 ```
 
-`suggest` fetches real volumes for brand/term candidates so you tag evidence, not guesses. It never auto-builds the basket: which keywords define your category is a judgment call. Version the basket — a share series is only comparable within one basket version.
+`suggest` fetches real volumes for brand/term candidates so you tag evidence, not guesses — note it uses the **paid DataForSEO API** (it asks before billing; `--yes` skips the prompt). It never auto-builds the basket: which keywords define your category is a judgment call. Version the basket — a share series is only comparable within one basket version.
 
 ## The three layers (kept honestly apart)
 
@@ -97,7 +113,7 @@ So here, `sos_calc` **refuses to produce a snapshot** until validation passes: m
 
 ## What this number is — and is not
 
-Share of search is a *leading indicator* that correlates with market-share movement. It is not market share, it is not revenue, and a single month proves nothing — Keyword Planner volumes are bucketed, so quarters tell truer stories than months (the dashboard flags quarter-deltas that are driven by a single month). Generic demand belongs to no one and is never counted as a competitor. When the data can't support a comparison, the tool says so instead of making one.
+Share of search is a *leading indicator* that correlates with market-share movement. It is not market share, it is not revenue, and a single month proves nothing — Keyword Planner volumes are bucketed, so quarters tell truer stories than months (the dashboard flags quarter-deltas that are driven by a single month). Generic demand belongs to no one and is never counted as a competitor. Keyword movers need 13+ months of history and ignore keywords under 30 searches/month a year ago — percentage swings on tiny bases are noise. When the data can't support a comparison, the tool says so instead of making one.
 
 ## For Claude Code users
 

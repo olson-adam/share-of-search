@@ -22,8 +22,8 @@ import sys
 from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
-from sos_lib import (GENERIC_BRAND, die, dump_json, load_basket, load_volumes,
-                     month_label)
+from sos_lib import (DataError, GENERIC_BRAND, die, dump_json, load_basket,
+                     load_volumes, month_key, month_label)
 from validate import validate
 
 
@@ -34,7 +34,17 @@ def r1(x: float) -> float:
 def compute(basket: dict, volumes: dict[tuple[str, str], int]) -> dict:
     kws = {k["keyword"].strip().lower(): k for k in basket["keywords"]}
     months = sorted({m for (_, m) in volumes})
-    brands = sorted({k["brand"] for k in basket["keywords"] if k["brand"] != GENERIC_BRAND})
+    all_brands = sorted({k["brand"] for k in basket["keywords"] if k["brand"] != GENERIC_BRAND})
+    # a brand with zero volume in every month is a data gap, not a competitor —
+    # counting it would silently inflate the rank denominator
+    brand_totals = {b: 0 for b in all_brands}
+    for (k, _), v in volumes.items():
+        if k in kws and kws[k]["brand"] != GENERIC_BRAND:
+            brand_totals[kws[k]["brand"]] = brand_totals.get(kws[k]["brand"], 0) + v
+    brands = [b for b in all_brands if brand_totals.get(b, 0) > 0]
+    brands_without_data = [b for b in all_brands if brand_totals.get(b, 0) == 0]
+    if basket["focus_brand"] in brands_without_data:
+        raise SystemExit(f"error: focus brand {basket['focus_brand']!r} has no volume data")
 
     per_brand: dict[str, list[int]] = {b: [] for b in brands}
     generic: list[int] = []
@@ -66,12 +76,24 @@ def compute(basket: dict, volumes: dict[tuple[str, str], int]) -> dict:
     focus = basket["focus_brand"]
     ranked = sorted(brands, key=lambda b: -shares[b][-1])
     rank = ranked.index(focus) + 1
-    gap_to_2 = (r1(shares[ranked[1]][-1] - shares[focus][-1])
-                if rank > 2 else (r1(shares[ranked[1]][-1] - shares[ranked[0]][-1])
-                                  if len(ranked) > 1 else None))
+    # gap_up: distance to the brand directly above you (positive, null for #1);
+    # lead_over_2: the leader's margin over #2 (null unless you ARE #1)
+    gap_up = r1(shares[ranked[rank - 2]][-1] - shares[focus][-1]) if rank > 1 else None
+    lead_over_2 = (r1(shares[ranked[0]][-1] - shares[ranked[1]][-1])
+                   if rank == 1 and len(ranked) > 1 else None)
+
+    # product-unbranded demand: unowned like Generic, but it names a product —
+    # broken out so the type actually changes what you can see
+    pu_kws = {k for k, meta in kws.items() if meta["type"] == "Product Unbranded"}
+    product_unbranded = [sum(v for (k, mm), v in volumes.items()
+                             if mm == m and k in pu_kws) for m in months]
 
     # keyword movers: YoY volume change per keyword (needs 13+ months)
     movers = []
+    movers_note = None
+    if len(months) < 13:
+        movers_note = (f"needs 13+ months of history for year-over-year moves "
+                       f"(have {len(months)})")
     if len(months) >= 13:
         m_now, m_then = months[-1], months[-13]
         for kw, meta in kws.items():
@@ -104,9 +126,12 @@ def compute(basket: dict, volumes: dict[tuple[str, str], int]) -> dict:
             "delta_year": delta(shares[focus], 12),
             "rank": rank,
             "of": len(brands),
-            "gap_to_2": gap_to_2,
+            "gap_up": gap_up,
+            "lead_over_2": lead_over_2,
             "volume": per_brand[focus][-1],
         },
+        "brands_without_data": brands_without_data,
+        "product_unbranded_volume": product_unbranded,
         "brands": [{
             "name": b,
             "share": shares[b][-1],
@@ -116,6 +141,7 @@ def compute(basket: dict, volumes: dict[tuple[str, str], int]) -> dict:
             "is_focus": b == focus,
         } for b in ranked],
         "movers": movers,
+        "movers_note": movers_note,
         "basket": {"keywords": len(kws),
                    "version": basket.get("version", "unversioned")},
     }
@@ -131,6 +157,8 @@ def load_capture(path: Path) -> dict | None:
         return None
     months = sorted({r["month"] for r in rows})
     brands = sorted({r["brand"] for r in rows if r["brand"] != "-site-total-"})
+    for r in rows:
+        month_key(r["month"])  # malformed months must not survive into labels
     def series(brand: str, field: str) -> list:
         by_month = {r["month"]: r for r in rows if r["brand"] == brand}
         out = []
@@ -165,6 +193,8 @@ def load_yield(path: Path) -> dict | None:
                   key=lambda r: r["month"])
     if not rows:
         return None
+    for r in rows:
+        month_key(r["month"])
     return {
         "property": rows[0].get("property", ""),
         "months": [month_label(r["month"]) for r in rows],
@@ -200,17 +230,30 @@ def main() -> None:
     snapshot = compute(basket, volumes)
     snapshot["validation"] = validation
     snapshot["source"] = args.source
-    capture = load_capture(args.workspace / "gsc.csv")
-    if capture:
-        snapshot["capture"] = capture
-    yld = load_yield(args.workspace / "ga4.csv")
-    if yld:
-        snapshot["yield"] = yld
+    # optional layers degrade to a warning — a malformed gsc/ga4 file must never
+    # take the market-demand snapshot down with it
+    try:
+        capture = load_capture(args.workspace / "gsc.csv")
+        if capture:
+            snapshot["capture"] = capture
+    except (DataError, ValueError, KeyError, IndexError) as e:
+        msg = f"capture layer (gsc.csv) skipped: {e}"
+        print(f"warning: {msg}", file=sys.stderr)
+        snapshot["validation"]["warnings"].append(msg)
+    try:
+        yld = load_yield(args.workspace / "ga4.csv")
+        if yld:
+            snapshot["yield"] = yld
+    except (DataError, ValueError, KeyError, IndexError) as e:
+        msg = f"yield layer (ga4.csv) skipped: {e}"
+        print(f"warning: {msg}", file=sys.stderr)
+        snapshot["validation"]["warnings"].append(msg)
     dump_json(snapshot, out)
     f = snapshot["focus"]
+    dq = "n/a" if f["delta_quarter"] is None else f["delta_quarter"]
+    dy = "n/a" if f["delta_year"] is None else f["delta_year"]
     print(f"{snapshot['focus_brand']}: {f['share']}% of category demand "
-          f"(rank {f['rank']}/{f['of']}, Δq {f['delta_quarter']}, Δy {f['delta_year']}) "
-          f"→ {out}")
+          f"(rank {f['rank']}/{f['of']}, Δq {dq}, Δy {dy}) → {out}")
 
 
 if __name__ == "__main__":

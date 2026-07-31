@@ -143,7 +143,7 @@ export default function App() {
   }
   const gainers = snap.brands.filter((b) => (b.delta_year ?? 0) > 0)
   const onlyGainer = gainers.length === 1 && gainers[0].is_focus
-  const axisMonths = [0, 3, 6, 9, 12, 15, n - 1].filter((i) => i < n)
+  const axisMonths = [...new Set([0, 3, 6, 9, 12, 15, n - 1].filter((i) => i >= 0 && i < n))]
     .map((i) => months[i].toLowerCase())
   const v = snap.validation
 
@@ -175,7 +175,9 @@ export default function App() {
                   {(f.delta_quarter ?? 0) > 0 ? "↗" : (f.delta_quarter ?? 0) < 0 ? "↘" : "→"} {fmtDelta(f.delta_quarter, " pts")} this quarter{spikeMonth ? ` · mostly ${spikeMonth}` : ""}
                 </span>
                 <span className="micro text-faint">
-                  rank {f.rank} of {f.of}{f.gap_to_2 !== null ? ` · gap to #2: ${f.gap_to_2}` : ""}
+                  rank {f.rank} of {f.of}
+                  {f.gap_up !== null ? ` · gap to #${f.rank - 1}: ${f.gap_up} pts` : ""}
+                  {f.lead_over_2 !== null ? ` · lead over #2: ${f.lead_over_2} pts` : ""}
                 </span>
                 <span className="micro text-faint">
                   category demand {catNow.toLocaleString("en")}/mo{catYoY !== null ? ` · ${catYoY > 0 ? "+" : ""}${catYoY}%` : ""}
@@ -232,6 +234,11 @@ export default function App() {
         <Card className="gap-0 rounded-md py-0">
           <CardContent className="px-7 py-6">
             <h3 className="pb-2 text-[14.5px] font-medium">Keyword movers <span className="micro pl-1 text-faint">Δ year</span></h3>
+            {snap.movers.length === 0 && (
+              <p className="max-w-[42ch] pt-2 text-[14px] leading-relaxed text-muted-foreground">
+                {snap.movers_note ?? "no keyword moved enough to report"}
+              </p>
+            )}
             <Table>
               <TableBody>
                 {snap.movers.slice(0, 5).map((m) => (
@@ -260,6 +267,12 @@ export default function App() {
                 <div className="text-[30px] font-normal tracking-[-0.02em] tabular-nums">{(snap.category_volume_total[n - 1] - snap.branded_volume_total[n - 1]).toLocaleString("en")}</div>
                 <div className="micro text-faint">unbranded searches / mo</div>
               </div>
+              {(snap.product_unbranded_volume?.[n - 1] ?? 0) > 0 && (
+                <div>
+                  <div className="text-[30px] font-normal tracking-[-0.02em] tabular-nums">{snap.product_unbranded_volume[n - 1].toLocaleString("en")}</div>
+                  <div className="micro text-faint">product names, no brand</div>
+                </div>
+              )}
             </div>
             <div className="pt-3"><BrandSpark values={snap.generic_share_of_total} you={false} id="generic" /></div>
             <div className="micro flex justify-between pt-1 text-faint">

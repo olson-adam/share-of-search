@@ -15,13 +15,14 @@ cp -r examples/demo-workspace "$TMP/ws"
 $PY examples/make_demo.py >/dev/null 2>&1
 diff -r examples/demo-workspace "$TMP/ws" >/dev/null 2>&1
 check "demo: regeneration is byte-identical" $?
-$PY scripts/sos_calc.py --workspace "$TMP/ws" --source keyword-planner >/dev/null 2>&1
+$PY scripts/sos_calc.py --workspace "$TMP/ws" --source demo >/dev/null 2>&1
 $PY - <<PYEOF
 import json
 s = json.load(open("$TMP/ws/snapshot.json"))
 assert {b["name"]: b["share"] for b in s["brands"]} == \
     {"Zenith": 47.8, "Apex": 30.9, "Acme": 13.1, "Nimbus": 8.2}, "demo shares drifted"
-assert s["focus"]["rank"] == 3 and s["focus"]["gap_to_2"] == 17.8
+assert s["focus"]["rank"] == 3 and s["focus"]["gap_up"] == 17.8
+assert s["focus"]["lead_over_2"] is None, "lead_over_2 only for rank 1"
 assert abs(sum(b["share"] for b in s["brands"]) - 100.0) < 0.21, "shares must sum to ~100"
 assert "capture" in s and s["capture"]["site"] == "sc-domain:acme.example"
 assert "your site only" in s["capture"]["note"], "capture must carry its honesty note"
@@ -141,7 +142,65 @@ assert 'src="/assets' not in h and 'href="/assets' not in h, "external asset ref
 PYEOF
 check "export: single-file report, everything embedded" $?
 
-# 10. basket check CLI works and flags single-keyword brands
+# 10. outlier guard catches DOWNWARD mangling (the 8 900→8 shape)
+cp -r "$TMP/ws" "$TMP/mangle"
+$PY - <<PYEOF
+import csv
+rows = list(csv.DictReader(open("$TMP/mangle/volumes.csv")))
+for r in rows:
+    if r["keyword"] == "zenith" and r["month"] == "2026-06":
+        r["volume"] = "8"  # a real value mangled down to single digits
+w = csv.DictWriter(open("$TMP/mangle/volumes.csv", "w", newline=""), fieldnames=["keyword","month","volume"])
+w.writeheader(); w.writerows(rows)
+PYEOF
+$PY scripts/validate.py --workspace "$TMP/mangle" 2>/dev/null | grep -q "outlier jump for 'zenith'"
+check "validate: downward-mangled volume flagged as outlier" $?
+
+# 11. rank-1 semantics: leader gets lead_over_2, never gap_up
+mkdir -p "$TMP/leader"
+$PY - <<PYEOF
+import json
+b = json.load(open("$TMP/ws/basket.json"))
+b["focus_brand"] = "Zenith"
+open("$TMP/leader/basket.json", "w").write(json.dumps(b))
+PYEOF
+cp "$TMP/ws/volumes.csv" "$TMP/leader/"
+$PY scripts/sos_calc.py --workspace "$TMP/leader" --source demo >/dev/null 2>&1
+$PY - <<PYEOF
+import json
+s = json.load(open("$TMP/leader/snapshot.json"))
+f = s["focus"]
+assert f["rank"] == 1 and f["gap_up"] is None, "rank 1 must have no gap_up"
+assert f["lead_over_2"] == 16.9, f"lead_over_2 wrong: {f['lead_over_2']}"
+PYEOF
+check "calc: rank-1 gets lead_over_2, gap_up is null" $?
+
+# 12. export refuses to emit a file with external refs (tampered dist)
+cp -r app/dist "$TMP/dist-tampered"
+$PY - <<PYEOF
+import re
+p = "$TMP/dist-tampered/index.html"
+h = open(p).read()
+open(p, "w").write(h + '\n<script type="module" src="/assets/extra-notinlined.js"></script>')
+PYEOF
+SOS_DIST="$TMP/dist-tampered" $PY scripts/serve.py --export "$TMP/tampered.html" >/dev/null 2>&1
+[ $? -ne 0 ]
+check "export: tampered dist with un-inlinable ref is refused" $?
+
+# 13. malformed ga4.csv degrades to a warning; snapshot still written
+cp -r "$TMP/ws" "$TMP/badyield"
+printf 'property,month,sessions,engaged_sessions,key_events\n123,not-a-month,10,5,1\n' > "$TMP/badyield/ga4.csv"
+$PY scripts/sos_calc.py --workspace "$TMP/badyield" --source demo >/dev/null 2>&1
+$PY - <<PYEOF
+import json
+s = json.load(open("$TMP/badyield/snapshot.json"))
+assert "yield" not in s, "malformed yield layer must be skipped"
+assert any("yield layer" in w for w in s["validation"]["warnings"]), "skip must be surfaced"
+assert s["focus"]["share"] == 13.1, "market layer must survive"
+PYEOF
+check "calc: malformed ga4.csv degrades, market layer survives" $?
+
+# 14. basket check CLI works and flags single-keyword brands
 $PY - <<PYEOF
 import json
 b = json.load(open("$TMP/ws/basket.json"))
