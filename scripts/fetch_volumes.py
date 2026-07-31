@@ -146,17 +146,20 @@ def fetch_keyword_planner(keywords: list[str], args) -> dict[tuple[str, str], in
             "and gcloud ADC (run: gcloud auth application-default login)")
     conf = yaml.safe_load(ads_yaml.read_text())
     creds = json.loads(adc.read_text())
+    customer_id = str(args.customer_id or conf.get("login_customer_id", "")).replace("-", "")
+    if not customer_id:
+        die("no customer id — pass --customer-id or set login_customer_id in ~/google-ads.yaml")
     client = GoogleAdsClient.load_from_dict({
         "developer_token": conf["developer_token"],
         "client_id": creds["client_id"],
         "client_secret": creds["client_secret"],
         "refresh_token": creds["refresh_token"],
-        "login_customer_id": str(conf.get("login_customer_id", "")).replace("-", ""),
+        "login_customer_id": customer_id,
         "use_proto_plus": True,
     })
     svc = client.get_service("KeywordPlanIdeaService")
     request = client.get_type("GenerateKeywordHistoricalMetricsRequest")
-    request.customer_id = str(conf.get("login_customer_id", "")).replace("-", "")
+    request.customer_id = customer_id
     request.keywords.extend(keywords)
     request.geo_target_constants.append(f"geoTargetConstants/{args.geo_target}")
     request.language = f"languageConstants/{args.language_constant}"
@@ -209,6 +212,9 @@ def main() -> None:
     ap.add_argument("--dfs-location", type=int, default=2752,
                     help="dataforseo location_code (default 2752 = Sweden)")
     ap.add_argument("--language", default="sv", help="dataforseo language_code")
+    ap.add_argument("--customer-id", default="",
+                    help="keyword-planner: Google Ads customer id (default: "
+                         "login_customer_id from ~/google-ads.yaml)")
     ap.add_argument("--geo-target", default="2752",
                     help="keyword-planner geoTargetConstant id (default 2752 = Sweden)")
     ap.add_argument("--language-constant", default="1015",
