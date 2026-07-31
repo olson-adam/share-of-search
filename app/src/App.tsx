@@ -299,9 +299,9 @@ export default function App() {
               )
               return (
                 <Card className="gap-0 rounded-md py-0">
-                  <CardContent className="px-7 py-6">
+                  <CardContent className="flex h-full flex-col px-7 py-6">
                     <h3 className="pb-1 text-[14.5px] font-medium">In the search results <span className="micro pl-1 text-faint">your brand queries · google search console</span></h3>
-                    <div className="flex flex-wrap items-baseline gap-x-7 gap-y-3 pt-1">
+                    <div className="grid grid-cols-4 gap-x-4 pt-1">
                       <div>
                         <div className="text-[27px] font-normal tracking-[-0.02em] tabular-nums">{fb ? fb.impressions[m].toLocaleString("en") : "—"}</div>
                         <div className="micro text-faint">impressions · <span className="whitespace-nowrap">{c.months[m].toLowerCase()}</span></div>
@@ -323,11 +323,13 @@ export default function App() {
                         </div>
                       )}
                     </div>
-                    {fb && <div className="pt-3"><BrandSpark values={fb.impressions} you={false} id="capture" /></div>}
-                    <div className="micro flex justify-between pt-1 text-faint">
-                      <span>{c.months[0].toLowerCase()}</span>
-                      <span>branded queries landing on your site</span>
-                      <span>{c.months[m].toLowerCase()}</span>
+                    <div className="mt-auto">
+                      {fb && <div className="pt-3"><BrandSpark values={fb.impressions} you={false} id="capture" /></div>}
+                      <div className="micro flex justify-between pt-1 text-faint">
+                        <span>{c.months[0].toLowerCase()}</span>
+                        <span>branded queries landing on your site</span>
+                        <span>{c.months[m].toLowerCase()}</span>
+                      </div>
                     </div>
                   </CardContent>
                 </Card>
@@ -338,9 +340,9 @@ export default function App() {
               const m = y.months.length - 1
               return (
                 <Card className="gap-0 rounded-md py-0">
-                  <CardContent className="px-7 py-6">
+                  <CardContent className="flex h-full flex-col px-7 py-6">
                     <h3 className="pb-1 text-[14.5px] font-medium">On your site <span className="micro pl-1 text-faint">organic search visitors · ga4</span></h3>
-                    <div className="flex flex-wrap items-baseline gap-x-7 gap-y-3 pt-1">
+                    <div className="grid grid-cols-4 gap-x-4 pt-1">
                       <div>
                         <div className="text-[27px] font-normal tracking-[-0.02em] tabular-nums">{y.sessions[m].toLocaleString("en")}</div>
                         <div className="micro text-faint">sessions · <span className="whitespace-nowrap">{y.months[m].toLowerCase()}</span></div>
@@ -362,11 +364,13 @@ export default function App() {
                         </div>
                       )}
                     </div>
-                    <div className="pt-3"><BrandSpark values={y.sessions} you={false} id="yield" /></div>
-                    <div className="micro flex justify-between pt-1 text-faint">
-                      <span>{y.months[0].toLowerCase()}</span>
-                      <span>all organic search · not query-level</span>
-                      <span>{y.months[m].toLowerCase()}</span>
+                    <div className="mt-auto">
+                      <div className="pt-3"><BrandSpark values={y.sessions} you={false} id="yield" /></div>
+                      <div className="micro flex justify-between pt-1 text-faint">
+                        <span>{y.months[0].toLowerCase()}</span>
+                        <span>all organic search · not query-level</span>
+                        <span>{y.months[m].toLowerCase()}</span>
+                      </div>
                     </div>
                   </CardContent>
                 </Card>
