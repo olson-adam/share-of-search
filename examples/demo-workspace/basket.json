@@ -1,0 +1,80 @@
+{
+  "category": "Nordic CRM tools",
+  "focus_brand": "Nordvik",
+  "geo": "SE",
+  "keywords": [
+    {
+      "brand": "Brantevik",
+      "keyword": "brantevik",
+      "type": "Branded"
+    },
+    {
+      "brand": "Brantevik",
+      "keyword": "brantevik crm",
+      "type": "Branded"
+    },
+    {
+      "brand": "Brantevik",
+      "keyword": "brantevik login",
+      "type": "Branded"
+    },
+    {
+      "brand": "-",
+      "keyword": "crm for smb",
+      "type": "Generic"
+    },
+    {
+      "brand": "-",
+      "keyword": "crm sverige",
+      "type": "Generic"
+    },
+    {
+      "brand": "Fjellvik",
+      "keyword": "fjellvik",
+      "type": "Branded"
+    },
+    {
+      "brand": "Fjellvik",
+      "keyword": "fjellvik crm",
+      "type": "Branded"
+    },
+    {
+      "brand": "Nordvik",
+      "keyword": "nordvik",
+      "type": "Branded"
+    },
+    {
+      "brand": "Nordvik",
+      "keyword": "nordvik crm",
+      "type": "Branded"
+    },
+    {
+      "brand": "Nordvik",
+      "keyword": "nordvik pricing",
+      "type": "Branded"
+    },
+    {
+      "brand": "-",
+      "keyword": "pipeline pro",
+      "type": "Product Unbranded"
+    },
+    {
+      "brand": "-",
+      "keyword": "pipeline tool",
+      "type": "Generic"
+    },
+    {
+      "brand": "Sundby",
+      "keyword": "sundby crm",
+      "type": "Branded"
+    },
+    {
+      "brand": "Sundby",
+      "keyword": "sundby pipeline",
+      "type": "Branded"
+    }
+  ],
+  "language": "sv",
+  "note": "Fictional demo category — every brand and number is invented.",
+  "version": "v4"
+}

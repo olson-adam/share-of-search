@@ -1,0 +1,104 @@
+@import "tailwindcss";
+@import "tw-animate-css";
+
+@custom-variant dark (&:is(.dark *));
+
+@font-face {
+  font-family: "Geist";
+  src: url("./assets/fonts/Geist.woff2") format("woff2");
+  font-weight: 100 900;
+  font-display: swap;
+}
+@font-face {
+  font-family: "Geist Mono";
+  src: url("./assets/fonts/GeistMono.woff2") format("woff2");
+  font-weight: 100 900;
+  font-display: swap;
+}
+
+/* dark-first instrument — Qantev-direction tokens */
+:root {
+  --background: #0c0c0e;
+  --foreground: #f4f4f2;
+  --card: #0e0e11;
+  --card-foreground: #f4f4f2;
+  --popover: #141418;
+  --popover-foreground: #f4f4f2;
+  --primary: #f4f4f2;
+  --primary-foreground: #141416;
+  --secondary: #1a1a1f;
+  --secondary-foreground: #f4f4f2;
+  --muted: #17171b;
+  --muted-foreground: #a2a2a8;
+  --accent: #1a1a1f;
+  --accent-foreground: #f4f4f2;
+  --destructive: #f2876f;
+  --border: rgba(255, 255, 255, 0.12);
+  --input: rgba(255, 255, 255, 0.14);
+  --ring: #8f8ffa;
+  --chart-1: #8f8ffa;
+  --chart-2: #e2f36e;
+  --chart-3: #4a4a58;
+  --chart-4: #5c5c6e;
+  --chart-5: #f2876f;
+  --radius: 0.25rem;
+
+  --peri: #8f8ffa;
+  --acid: #e2f36e;
+  --coral: #f2876f;
+  --faint: #5c5c64;
+  --light: #d8d8d4;
+}
+
+@theme inline {
+  --font-sans: "Geist", "Inter", system-ui, sans-serif;
+  --font-mono: "Geist Mono", ui-monospace, "SF Mono", monospace;
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --color-card: var(--card);
+  --color-card-foreground: var(--card-foreground);
+  --color-popover: var(--popover);
+  --color-popover-foreground: var(--popover-foreground);
+  --color-primary: var(--primary);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-secondary: var(--secondary);
+  --color-secondary-foreground: var(--secondary-foreground);
+  --color-muted: var(--muted);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-accent: var(--accent);
+  --color-accent-foreground: var(--accent-foreground);
+  --color-destructive: var(--destructive);
+  --color-border: var(--border);
+  --color-input: var(--input);
+  --color-ring: var(--ring);
+  --color-chart-1: var(--chart-1);
+  --color-chart-2: var(--chart-2);
+  --color-chart-3: var(--chart-3);
+  --color-chart-4: var(--chart-4);
+  --color-chart-5: var(--chart-5);
+  --color-peri: var(--peri);
+  --color-acid: var(--acid);
+  --color-coral: var(--coral);
+  --color-faint: var(--faint);
+  --color-light: var(--light);
+  --radius-sm: calc(var(--radius) - 2px);
+  --radius-md: var(--radius);
+  --radius-lg: calc(var(--radius) + 2px);
+  --radius-xl: calc(var(--radius) + 6px);
+}
+
+@layer base {
+  * {
+    @apply border-border outline-ring/50;
+  }
+  body {
+    @apply bg-background text-foreground font-sans antialiased;
+  }
+}
+
+.micro {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+}
