@@ -301,25 +301,25 @@ export default function App() {
                 <Card className="gap-0 rounded-md py-0">
                   <CardContent className="px-7 py-6">
                     <h3 className="pb-1 text-[14.5px] font-medium">In the search results <span className="micro pl-1 text-faint">your brand queries · google search console</span></h3>
-                    <div className="flex items-baseline gap-6 pt-1">
+                    <div className="flex flex-wrap items-baseline gap-x-7 gap-y-3 pt-1">
                       <div>
-                        <div className="text-[30px] font-normal tracking-[-0.02em] tabular-nums">{fb ? fb.impressions[m].toLocaleString("en") : "—"}</div>
-                        <div className="micro whitespace-nowrap text-faint">branded impressions · {c.months[m].toLowerCase()}</div>
+                        <div className="text-[27px] font-normal tracking-[-0.02em] tabular-nums">{fb ? fb.impressions[m].toLocaleString("en") : "—"}</div>
+                        <div className="micro text-faint">impressions · <span className="whitespace-nowrap">{c.months[m].toLowerCase()}</span></div>
                       </div>
                       <div>
-                        <div className="text-[30px] font-normal tracking-[-0.02em] tabular-nums">{fb ? fb.clicks[m].toLocaleString("en") : "—"}</div>
-                        <div className="micro text-faint">branded clicks</div>
+                        <div className="text-[27px] font-normal tracking-[-0.02em] tabular-nums">{fb ? fb.clicks[m].toLocaleString("en") : "—"}</div>
+                        <div className="micro text-faint">clicks</div>
                       </div>
                       <div>
-                        <div className="text-[30px] font-normal tracking-[-0.02em] tabular-nums">{c.branded_share_of_site_impressions[m]}%</div>
+                        <div className="text-[27px] font-normal tracking-[-0.02em] tabular-nums">{c.branded_share_of_site_impressions[m]}%</div>
                         <div className="micro text-faint">of site impressions</div>
                       </div>
                       {fb && m >= 12 && fb.impressions[m - 12] > 0 && (
                         <div>
-                          <div className={`text-[30px] font-normal tracking-[-0.02em] tabular-nums ${fb.impressions[m] >= fb.impressions[m - 12] ? "text-acid" : "text-coral"}`}>
+                          <div className={`text-[27px] font-normal tracking-[-0.02em] tabular-nums ${fb.impressions[m] >= fb.impressions[m - 12] ? "text-acid" : "text-coral"}`}>
                             {fb.impressions[m] >= fb.impressions[m - 12] ? "+" : ""}{Math.round(100 * (fb.impressions[m] - fb.impressions[m - 12]) / fb.impressions[m - 12])}%
                           </div>
-                          <div className="micro text-faint">impressions Δ year</div>
+                          <div className="micro text-faint">Δ year</div>
                         </div>
                       )}
                     </div>
@@ -340,25 +340,25 @@ export default function App() {
                 <Card className="gap-0 rounded-md py-0">
                   <CardContent className="px-7 py-6">
                     <h3 className="pb-1 text-[14.5px] font-medium">On your site <span className="micro pl-1 text-faint">organic search visitors · ga4</span></h3>
-                    <div className="flex items-baseline gap-6 pt-1">
+                    <div className="flex flex-wrap items-baseline gap-x-7 gap-y-3 pt-1">
                       <div>
-                        <div className="text-[30px] font-normal tracking-[-0.02em] tabular-nums">{y.sessions[m].toLocaleString("en")}</div>
-                        <div className="micro whitespace-nowrap text-faint">sessions · {y.months[m].toLowerCase()}</div>
+                        <div className="text-[27px] font-normal tracking-[-0.02em] tabular-nums">{y.sessions[m].toLocaleString("en")}</div>
+                        <div className="micro text-faint">sessions · <span className="whitespace-nowrap">{y.months[m].toLowerCase()}</span></div>
                       </div>
                       <div>
-                        <div className="text-[30px] font-normal tracking-[-0.02em] tabular-nums">{y.engaged_sessions[m].toLocaleString("en")}</div>
+                        <div className="text-[27px] font-normal tracking-[-0.02em] tabular-nums">{y.engaged_sessions[m].toLocaleString("en")}</div>
                         <div className="micro text-faint">engaged</div>
                       </div>
                       <div>
-                        <div className="text-[30px] font-normal tracking-[-0.02em] tabular-nums">{y.key_events[m].toLocaleString("en")}</div>
+                        <div className="text-[27px] font-normal tracking-[-0.02em] tabular-nums">{y.key_events[m].toLocaleString("en")}</div>
                         <div className="micro text-faint">key events</div>
                       </div>
                       {m >= 12 && y.sessions[m - 12] > 0 && (
                         <div>
-                          <div className={`text-[30px] font-normal tracking-[-0.02em] tabular-nums ${y.sessions[m] >= y.sessions[m - 12] ? "text-acid" : "text-coral"}`}>
+                          <div className={`text-[27px] font-normal tracking-[-0.02em] tabular-nums ${y.sessions[m] >= y.sessions[m - 12] ? "text-acid" : "text-coral"}`}>
                             {y.sessions[m] >= y.sessions[m - 12] ? "+" : ""}{Math.round(100 * (y.sessions[m] - y.sessions[m - 12]) / y.sessions[m - 12])}%
                           </div>
-                          <div className="micro text-faint">sessions Δ year</div>
+                          <div className="micro text-faint">Δ year</div>
                         </div>
                       )}
                     </div>
