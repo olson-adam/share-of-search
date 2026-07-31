@@ -210,5 +210,18 @@ PYEOF
 $PY scripts/basket_builder.py check "$TMP/thin.json" 2>/dev/null | grep -q "only 1 keyword"
 check "basket check: single-keyword brand flagged" $?
 
+# 15. shipped snapshots are the fictional demo — never anyone's real data
+$PY - <<PYEOF
+import json, subprocess
+for f in ("examples/demo-workspace/snapshot.json", "app/public/snapshot.json", "app/dist/snapshot.json"):
+    head = subprocess.run(["git", "show", f"HEAD:{f}"], capture_output=True, text=True)
+    if head.returncode:  # not a git checkout (e.g. tarball) — skip
+        continue
+    s = json.loads(head.stdout)
+    assert s.get("source") == "demo", f"{f} committed with source={s.get('source')!r}"
+    assert s.get("focus_brand") == "Acme", f"{f} committed with a non-demo brand"
+PYEOF
+check "hygiene: committed snapshots are the demo, nothing else" $?
+
 echo; echo "$pass passed, $fail failed"
 [ $fail -eq 0 ]

@@ -98,9 +98,9 @@ def cmd_suggest(args) -> None:
 
 
 TEMPLATE = {
-    "category": "your category, e.g. hearing protection",
-    "geo": "SE",
-    "language": "sv",
+    "category": "your category, e.g. crm tools",
+    "geo": "US",
+    "language": "en",
     "focus_brand": "YourBrand",
     "version": "1",
     "keywords": [

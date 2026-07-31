@@ -50,19 +50,19 @@ All providers merge into the same history file — refreshes never delete old mo
 
 ## The basket — the judgment step no tool should automate
 
-Your share number is only as good as the keyword basket that defines the category. The schema is three types: **Branded** (carries a brand), **Generic** ("crm tools" — owned by no one), and **Product Unbranded** — product names searched *without* their brand ("neo 85"). That last type is the one every SoS setup misses, and missing it understates whichever brand owns those products.
+Your share number is only as good as the keyword basket that defines the category. The schema is three types: **Branded** (carries a brand), **Generic** ("crm tools" — owned by no one), and **Product Unbranded** — product names searched *without* their brand ("pipeline pro"). That last type is the one every SoS setup misses, and missing it understates whichever brand owns those products.
 
 A basket is one JSON file:
 
 ```json
 {
-  "category": "hearing protection", "geo": "SE", "language": "sv",
+  "category": "crm tools", "geo": "US", "language": "en",
   "focus_brand": "Acme", "version": "1",
   "keywords": [
-    {"keyword": "acme",        "brand": "Acme",   "type": "Branded"},
-    {"keyword": "zenith",      "brand": "Zenith", "type": "Branded"},
-    {"keyword": "ear defenders", "brand": "-",    "type": "Generic"},
-    {"keyword": "neo 85",      "brand": "-",      "type": "Product Unbranded"}
+    {"keyword": "acme",         "brand": "Acme",   "type": "Branded"},
+    {"keyword": "zenith",       "brand": "Zenith", "type": "Branded"},
+    {"keyword": "crm software", "brand": "-",      "type": "Generic"},
+    {"keyword": "pipeline pro", "brand": "-",      "type": "Product Unbranded"}
   ]
 }
 ```
