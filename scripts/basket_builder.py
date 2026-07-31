@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """Build and check the keyword basket — the step every SoS tool leaves manual.
 
-    python3 scripts/basket_builder.py suggest --brands "Nordvik,Brantevik" \
+    python3 scripts/basket_builder.py suggest --brands "Acme,Zenith" \
         --terms "crm,pipeline" --out candidates.json [--dfs-location 2752 --language sv]
     python3 scripts/basket_builder.py check basket.json
 

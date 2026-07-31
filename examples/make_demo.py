@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Generate the fictional Nordvik demo workspace (basket + 18 months of volumes).
+"""Generate the fictional Acme demo workspace (basket + 18 months of volumes).
 
 Deterministic: every value is derived from the target share series below, so
 regenerating always yields byte-identical files, and running sos_calc on the
@@ -19,29 +19,29 @@ from sos_lib import dump_json, save_volumes
 
 MONTHS = [f"2025-{m:02d}" for m in range(2, 13)] + [f"2026-{m:02d}" for m in range(1, 8)]
 
-# target share-of-branded series (percent) — the story: Nordvik is the only riser
+# target share-of-branded series (percent) — the story: Acme is the only riser
 SHARES = {
-    "Brantevik": [49.2,49.0,49.1,48.8,48.9,48.6,48.7,48.4,48.5,48.3,48.4,48.2,48.3,48.2,48.1,48.2,47.9,47.8],
-    "Fjellvik":  [31.8,31.7,31.6,31.7,31.5,31.6,31.5,31.4,31.5,31.4,31.3,31.4,31.3,31.4,31.3,31.2,31.0,30.9],
-    "Nordvik":   [9.6,9.9,9.8,10.2,10.1,10.5,10.8,10.7,11.1,11.4,11.7,12.0,11.9,12.3,12.6,12.9,13.0,13.1],
-    "Sundby":    [9.4,9.4,9.5,9.3,9.5,9.3,9.0,9.5,8.9,8.9,8.6,8.4,8.5,8.1,8.0,7.7,8.1,8.2],
+    "Zenith": [49.2,49.0,49.1,48.8,48.9,48.6,48.7,48.4,48.5,48.3,48.4,48.2,48.3,48.2,48.1,48.2,47.9,47.8],
+    "Apex":  [31.8,31.7,31.6,31.7,31.5,31.6,31.5,31.4,31.5,31.4,31.3,31.4,31.3,31.4,31.3,31.2,31.0,30.9],
+    "Acme":   [9.6,9.9,9.8,10.2,10.1,10.5,10.8,10.7,11.1,11.4,11.7,12.0,11.9,12.3,12.6,12.9,13.0,13.1],
+    "Nimbus":    [9.4,9.4,9.5,9.3,9.5,9.3,9.0,9.5,8.9,8.9,8.6,8.4,8.5,8.1,8.0,7.7,8.1,8.2],
 }
 BRANDED_TOTAL = [14800 + round(2100 * i / 17) for i in range(18)]   # 14.8k → 16.9k
 GENERIC_TOTAL = [9200 + round(1300 * i / 17) for i in range(18)]    # 9.2k → 10.5k
 
 # each brand's volume is split across a few keywords, like a real basket
 BRAND_KEYWORDS = {
-    "Brantevik": [("brantevik", 0.62), ("brantevik crm", 0.24), ("brantevik login", 0.14)],
-    "Fjellvik":  [("fjellvik", 0.68), ("fjellvik crm", 0.32)],
-    "Nordvik":   [("nordvik", 0.58), ("nordvik crm", 0.27), ("nordvik pricing", 0.15)],
-    "Sundby":    [("sundby crm", 0.71), ("sundby pipeline", 0.29)],
+    "Zenith": [("zenith", 0.62), ("zenith crm", 0.24), ("zenith login", 0.14)],
+    "Apex":  [("apex", 0.68), ("apex crm", 0.32)],
+    "Acme":   [("acme", 0.58), ("acme crm", 0.27), ("acme pricing", 0.15)],
+    "Nimbus":    [("nimbus crm", 0.71), ("nimbus pipeline", 0.29)],
 }
 GENERIC_KEYWORDS = [("crm for smb", 0.34), ("pipeline tool", 0.26),
                     ("crm sverige", 0.23), ("pipeline pro", 0.17)]
 PRODUCT_UNBRANDED = {"pipeline pro"}  # a product name searched without its brand
 
 # keyword-level trend shaping (relative drift over 18 months, multiplicative)
-DRIFT = {"nordvik crm": 1.55, "nordvik pricing": 1.30, "brantevik login": 0.94,
+DRIFT = {"acme crm": 1.55, "acme pricing": 1.30, "zenith login": 0.94,
          "pipeline pro": 1.20}
 
 
@@ -68,10 +68,10 @@ def main() -> None:
         keywords.append({"keyword": kw, "brand": "-",
                          "type": "Product Unbranded" if kw in PRODUCT_UNBRANDED else "Generic"})
     basket = {
-        "category": "Nordic CRM tools",
+        "category": "CRM tools",
         "geo": "SE",
         "language": "sv",
-        "focus_brand": "Nordvik",
+        "focus_brand": "Acme",
         "version": "v4",
         "note": "Fictional demo category — every brand and number is invented.",
         "keywords": sorted(keywords, key=lambda k: k["keyword"]),
@@ -89,22 +89,22 @@ def main() -> None:
             volumes[(kw, month)] = v
     save_volumes(ws / "volumes.csv", volumes)
 
-    # layer 2 demo — Nordvik's own GSC: branded capture rising with the share story
+    # layer 2 demo — Acme's own GSC: branded capture rising with the share story
     import csv
     with (ws / "gsc.csv").open("w", newline="", encoding="utf-8") as f:
         w = csv.DictWriter(f, fieldnames=["month", "brand", "clicks", "impressions",
                                           "position", "site"])
         w.writeheader()
-        site = "sc-domain:nordvik.example"
+        site = "sc-domain:acme.example"
         for i, month in enumerate(MONTHS[2:], 2):  # GSC window: 16 months
-            ndv_imp = 2600 + round(2400 * (i - 2) / 15)
+            acme_imp = 2600 + round(2400 * (i - 2) / 15)
             rows = [
-                ("Nordvik", round(ndv_imp * 0.34), ndv_imp, 1.2),
-                ("Brantevik", 6 + i, 160 + 6 * i, 8.4),      # comparison queries
-                ("Fjellvik", 3, 70 + 3 * i, 9.1),
-                ("Sundby", 1, 30, 11.0),
-                ("-site-total-", round((ndv_imp + 5200 + 90 * i) * 0.12),
-                 ndv_imp + 5200 + 90 * i, ""),
+                ("Acme", round(acme_imp * 0.34), acme_imp, 1.2),
+                ("Zenith", 6 + i, 160 + 6 * i, 8.4),        # comparison queries
+                ("Apex", 3, 70 + 3 * i, 9.1),
+                ("Nimbus", 1, 30, 11.0),
+                ("-site-total-", round((acme_imp + 5200 + 90 * i) * 0.12),
+                 acme_imp + 5200 + 90 * i, ""),
             ]
             for brand, clicks, imp, pos in rows:
                 w.writerow({"month": month, "brand": brand, "clicks": clicks,

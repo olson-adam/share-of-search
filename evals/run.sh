@@ -20,10 +20,10 @@ $PY - <<PYEOF
 import json
 s = json.load(open("$TMP/ws/snapshot.json"))
 assert {b["name"]: b["share"] for b in s["brands"]} == \
-    {"Brantevik": 47.8, "Fjellvik": 30.9, "Nordvik": 13.1, "Sundby": 8.2}, "demo shares drifted"
+    {"Zenith": 47.8, "Apex": 30.9, "Acme": 13.1, "Nimbus": 8.2}, "demo shares drifted"
 assert s["focus"]["rank"] == 3 and s["focus"]["gap_to_2"] == 17.8
 assert abs(sum(b["share"] for b in s["brands"]) - 100.0) < 0.21, "shares must sum to ~100"
-assert "capture" in s and s["capture"]["site"] == "sc-domain:nordvik.example"
+assert "capture" in s and s["capture"]["site"] == "sc-domain:acme.example"
 assert "your site only" in s["capture"]["note"], "capture must carry its honesty note"
 assert "yield" in s and "query dimension" in s["yield"]["note"]
 PYEOF
@@ -145,7 +145,7 @@ check "export: single-file report, everything embedded" $?
 $PY - <<PYEOF
 import json
 b = json.load(open("$TMP/ws/basket.json"))
-b["keywords"] = [k for k in b["keywords"] if k["keyword"] != "fjellvik crm"]
+b["keywords"] = [k for k in b["keywords"] if k["keyword"] != "apex crm"]
 open("$TMP/thin.json", "w").write(json.dumps(b))
 PYEOF
 $PY scripts/basket_builder.py check "$TMP/thin.json" 2>/dev/null | grep -q "only 1 keyword"

@@ -109,4 +109,4 @@ npx skills add -g olson-adam/share-of-search
 
 ## License
 
-MIT. Fictional demo data only — the Nordvik universe is invented; run it on your own category.
+MIT. Fictional demo data only — Acme and its rivals are placeholders; run it on your own category.

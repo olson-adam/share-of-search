@@ -1,21 +1,31 @@
 {
-  "category": "Nordic CRM tools",
-  "focus_brand": "Nordvik",
+  "category": "CRM tools",
+  "focus_brand": "Acme",
   "geo": "SE",
   "keywords": [
     {
-      "brand": "Brantevik",
-      "keyword": "brantevik",
+      "brand": "Acme",
+      "keyword": "acme",
       "type": "Branded"
     },
     {
-      "brand": "Brantevik",
-      "keyword": "brantevik crm",
+      "brand": "Acme",
+      "keyword": "acme crm",
       "type": "Branded"
     },
     {
-      "brand": "Brantevik",
-      "keyword": "brantevik login",
+      "brand": "Acme",
+      "keyword": "acme pricing",
+      "type": "Branded"
+    },
+    {
+      "brand": "Apex",
+      "keyword": "apex",
+      "type": "Branded"
+    },
+    {
+      "brand": "Apex",
+      "keyword": "apex crm",
       "type": "Branded"
     },
     {
@@ -29,28 +39,13 @@
       "type": "Generic"
     },
     {
-      "brand": "Fjellvik",
-      "keyword": "fjellvik",
+      "brand": "Nimbus",
+      "keyword": "nimbus crm",
       "type": "Branded"
     },
     {
-      "brand": "Fjellvik",
-      "keyword": "fjellvik crm",
-      "type": "Branded"
-    },
-    {
-      "brand": "Nordvik",
-      "keyword": "nordvik",
-      "type": "Branded"
-    },
-    {
-      "brand": "Nordvik",
-      "keyword": "nordvik crm",
-      "type": "Branded"
-    },
-    {
-      "brand": "Nordvik",
-      "keyword": "nordvik pricing",
+      "brand": "Nimbus",
+      "keyword": "nimbus pipeline",
       "type": "Branded"
     },
     {
@@ -64,13 +59,18 @@
       "type": "Generic"
     },
     {
-      "brand": "Sundby",
-      "keyword": "sundby crm",
+      "brand": "Zenith",
+      "keyword": "zenith",
       "type": "Branded"
     },
     {
-      "brand": "Sundby",
-      "keyword": "sundby pipeline",
+      "brand": "Zenith",
+      "keyword": "zenith crm",
+      "type": "Branded"
+    },
+    {
+      "brand": "Zenith",
+      "keyword": "zenith login",
       "type": "Branded"
     }
   ],
