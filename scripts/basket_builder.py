@@ -58,8 +58,12 @@ def cmd_suggest(args) -> None:
     if not args.yes:
         print(f"about to fetch volumes for {len(kws)} candidates via DataForSEO "
               "(PAID — roughly $0.05–0.10 per run at this size).", file=sys.stderr)
-        if input("continue? [y/N] ").strip().lower() not in ("y", "yes"):
-            die("aborted — nothing was billed", code=1)
+        try:
+            answer = input("continue? [y/N] ").strip().lower()
+        except EOFError:  # non-interactive run without --yes
+            answer = ""
+        if answer not in ("y", "yes"):
+            die("aborted — nothing was billed (pass --yes for non-interactive runs)", code=1)
     print(f"fetching volumes for {len(kws)} candidates…", file=sys.stderr)
 
     class A:  # minimal arg shim for the connector
