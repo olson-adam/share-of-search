@@ -31,7 +31,10 @@ export type Snapshot = {
   };
 }
 
+declare global { interface Window { __SNAPSHOT__?: Snapshot } }
+
 export async function loadSnapshot(): Promise<Snapshot> {
+  if (window.__SNAPSHOT__) return window.__SNAPSHOT__  // single-file export
   const res = await fetch("/snapshot.json")
   if (!res.ok) throw new Error(`snapshot.json: HTTP ${res.status}`)
   return res.json()

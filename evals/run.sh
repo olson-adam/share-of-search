@@ -131,7 +131,17 @@ assert months[0] == "2025-02" and months[-1] == "2026-07", f"history lost: {mont
 PYEOF
 check "merge: partial refresh never deletes history" $?
 
-# 9. basket check CLI works and flags single-keyword brands
+# 9. serve --export produces a single self-contained HTML
+$PY scripts/serve.py --export "$TMP/report.html" >/dev/null 2>&1
+$PY - <<PYEOF
+h = open("$TMP/report.html").read()
+assert "window.__SNAPSHOT__" in h, "snapshot not embedded"
+assert "<style>" in h and '<script type="module">' in h, "assets not inlined"
+assert 'src="/assets' not in h and 'href="/assets' not in h, "external asset refs remain"
+PYEOF
+check "export: single-file report, everything embedded" $?
+
+# 10. basket check CLI works and flags single-keyword brands
 $PY - <<PYEOF
 import json
 b = json.load(open("$TMP/ws/basket.json"))

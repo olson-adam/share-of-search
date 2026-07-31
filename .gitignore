@@ -1,5 +1,6 @@
 sos-workspace/
 node_modules/
 dist/
+!app/dist/
 .DS_Store
 *.log
