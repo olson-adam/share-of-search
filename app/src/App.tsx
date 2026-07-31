@@ -98,7 +98,8 @@ function HeroChart({ snap, mode }: { snap: Snapshot; mode: "share" | "volume" })
 
 function BrandSpark({ values, you, id }: { values: number[]; you: boolean; id: string }) {
   const lo = Math.min(...values), hi = Math.max(...values)
-  const data = values.map((v, i) => ({ i, v: (v - lo) / (hi - lo || 1) }))
+  // a perfectly flat series sits mid-card as a deliberate line, not at the floor
+  const data = values.map((v, i) => ({ i, v: hi > lo ? (v - lo) / (hi - lo) : 0.5 }))
   const stroke = you ? "#7d940f" : "#6a6a78"
   return (
     <ChartContainer config={chartConfig} className="h-16 w-full">

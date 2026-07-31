@@ -27,7 +27,11 @@ SHARES = {
     "Nimbus":    [9.4,9.4,9.5,9.3,9.5,9.3,9.0,9.5,8.9,8.9,8.6,8.4,8.5,8.1,8.0,7.7,8.1,8.2],
 }
 BRANDED_TOTAL = [14800 + round(2100 * i / 17) for i in range(18)]   # 14.8k → 16.9k
-GENERIC_TOTAL = [9200 + round(1300 * i / 17) for i in range(18)]    # 9.2k → 10.5k
+# generic demand grows a bit FASTER than branded (+20% vs +14%) with monthly
+# wobble — so its share of total actually moves, like real unbranded demand
+_G_WOBBLE = [0, -120, 80, -60, 150, -90, 40, -140, 110, -50,
+             90, -110, 60, -80, 130, -40, -150, 0]
+GENERIC_TOTAL = [8700 + round(1800 * i / 17) + _G_WOBBLE[i] for i in range(18)]  # 8.7k → 10.5k
 
 # each brand's volume is split across a few keywords, like a real basket
 BRAND_KEYWORDS = {

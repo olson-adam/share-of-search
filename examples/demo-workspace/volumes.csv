@@ -89,41 +89,41 @@ apex crm,2026-04,1656
 apex crm,2026-05,1663
 apex crm,2026-06,1664
 apex crm,2026-07,1671
-crm for smb,2025-02,3128
-crm for smb,2025-03,3148
-crm for smb,2025-04,3167
-crm for smb,2025-05,3186
-crm for smb,2025-06,3206
-crm for smb,2025-07,3225
-crm for smb,2025-08,3245
-crm for smb,2025-09,3264
-crm for smb,2025-10,3284
-crm for smb,2025-11,3303
-crm for smb,2025-12,3322
-crm for smb,2026-01,3341
-crm for smb,2026-02,3359
-crm for smb,2026-03,3379
-crm for smb,2026-04,3397
-crm for smb,2026-05,3416
-crm for smb,2026-06,3435
+crm for smb,2025-02,2958
+crm for smb,2025-03,2947
+crm for smb,2025-04,3045
+crm for smb,2025-05,3028
+crm for smb,2025-06,3128
+crm for smb,2025-07,3076
+crm for smb,2025-08,3149
+crm for smb,2025-09,3118
+crm for smb,2025-10,3232
+crm for smb,2025-11,3207
+crm for smb,2025-12,3282
+crm for smb,2026-01,3245
+crm for smb,2026-02,3331
+crm for smb,2026-03,3312
+crm for smb,2026-04,3411
+crm for smb,2026-05,3383
+crm for smb,2026-06,3375
 crm for smb,2026-07,3452
-crm sverige,2025-02,2116
-crm sverige,2025-03,2129
-crm sverige,2025-04,2143
-crm sverige,2025-05,2156
-crm sverige,2025-06,2169
-crm sverige,2025-07,2182
-crm sverige,2025-08,2195
-crm sverige,2025-09,2208
-crm sverige,2025-10,2221
-crm sverige,2025-11,2234
-crm sverige,2025-12,2247
-crm sverige,2026-01,2260
-crm sverige,2026-02,2273
-crm sverige,2026-03,2285
-crm sverige,2026-04,2298
-crm sverige,2026-05,2310
-crm sverige,2026-06,2323
+crm sverige,2025-02,2001
+crm sverige,2025-03,1994
+crm sverige,2025-04,2060
+crm sverige,2025-05,2048
+crm sverige,2025-06,2116
+crm sverige,2025-07,2081
+crm sverige,2025-08,2131
+crm sverige,2025-09,2110
+crm sverige,2025-10,2186
+crm sverige,2025-11,2170
+crm sverige,2025-12,2221
+crm sverige,2026-01,2195
+crm sverige,2026-02,2253
+crm sverige,2026-03,2241
+crm sverige,2026-04,2307
+crm sverige,2026-05,2288
+crm sverige,2026-06,2283
 crm sverige,2026-07,2336
 nimbus crm,2025-02,988
 nimbus crm,2025-03,996
@@ -161,41 +161,41 @@ nimbus pipeline,2026-04,383
 nimbus pipeline,2026-05,372
 nimbus pipeline,2026-06,394
 nimbus pipeline,2026-07,402
-pipeline pro,2025-02,1564
-pipeline pro,2025-03,1592
-pipeline pro,2025-04,1621
-pipeline pro,2025-05,1650
-pipeline pro,2025-06,1679
-pipeline pro,2025-07,1708
-pipeline pro,2025-08,1737
-pipeline pro,2025-09,1767
-pipeline pro,2025-10,1796
-pipeline pro,2025-11,1826
-pipeline pro,2025-12,1856
-pipeline pro,2026-01,1886
-pipeline pro,2026-02,1917
-pipeline pro,2026-03,1947
-pipeline pro,2026-04,1978
-pipeline pro,2026-05,2009
-pipeline pro,2026-06,2040
+pipeline pro,2025-02,1479
+pipeline pro,2025-03,1491
+pipeline pro,2025-04,1558
+pipeline pro,2025-05,1567
+pipeline pro,2025-06,1638
+pipeline pro,2025-07,1629
+pipeline pro,2025-08,1686
+pipeline pro,2025-09,1688
+pipeline pro,2025-10,1768
+pipeline pro,2025-11,1773
+pipeline pro,2025-12,1835
+pipeline pro,2026-01,1833
+pipeline pro,2026-02,1900
+pipeline pro,2026-03,1910
+pipeline pro,2026-04,1986
+pipeline pro,2026-05,1990
+pipeline pro,2026-06,2005
 pipeline pro,2026-07,2072
-pipeline tool,2025-02,2392
-pipeline tool,2025-03,2407
-pipeline tool,2025-04,2422
-pipeline tool,2025-05,2437
-pipeline tool,2025-06,2452
-pipeline tool,2025-07,2467
-pipeline tool,2025-08,2482
-pipeline tool,2025-09,2496
-pipeline tool,2025-10,2511
-pipeline tool,2025-11,2525
-pipeline tool,2025-12,2540
-pipeline tool,2026-01,2554
-pipeline tool,2026-02,2569
-pipeline tool,2026-03,2583
-pipeline tool,2026-04,2598
-pipeline tool,2026-05,2612
-pipeline tool,2026-06,2626
+pipeline tool,2025-02,2262
+pipeline tool,2025-03,2254
+pipeline tool,2025-04,2329
+pipeline tool,2025-05,2315
+pipeline tool,2025-06,2392
+pipeline tool,2025-07,2353
+pipeline tool,2025-08,2409
+pipeline tool,2025-09,2385
+pipeline tool,2025-10,2471
+pipeline tool,2025-11,2453
+pipeline tool,2025-12,2511
+pipeline tool,2026-01,2482
+pipeline tool,2026-02,2547
+pipeline tool,2026-03,2533
+pipeline tool,2026-04,2608
+pipeline tool,2026-05,2587
+pipeline tool,2026-06,2581
 pipeline tool,2026-07,2640
 zenith,2025-02,4515
 zenith,2025-03,4536
