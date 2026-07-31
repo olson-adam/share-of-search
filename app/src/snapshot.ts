@@ -19,6 +19,16 @@ export type Snapshot = {
   basket: { keywords: number; version: string };
   validation: { errors: string[]; warnings: string[];
                 stats: { months?: number; rows?: number; first_month?: string; last_month?: string } };
+  capture?: {
+    site: string; months: string[]; note: string;
+    brands: Record<string, { clicks: number[]; impressions: number[]; position: number[] }>;
+    site_total: { clicks: number[]; impressions: number[] };
+    branded_share_of_site_impressions: number[];
+  };
+  yield?: {
+    property: string; months: string[]; note: string;
+    sessions: number[]; engaged_sessions: number[]; key_events: number[];
+  };
 }
 
 export async function loadSnapshot(): Promise<Snapshot> {

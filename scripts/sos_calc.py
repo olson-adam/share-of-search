@@ -121,6 +121,61 @@ def compute(basket: dict, volumes: dict[tuple[str, str], int]) -> dict:
     }
 
 
+def load_capture(path: Path) -> dict | None:
+    """Optional layer 2: gsc.csv → capture block (your site only, never the market)."""
+    import csv as csv_mod
+    if not path.exists():
+        return None
+    rows = list(csv_mod.DictReader(path.open(encoding="utf-8-sig")))
+    if not rows:
+        return None
+    months = sorted({r["month"] for r in rows})
+    brands = sorted({r["brand"] for r in rows if r["brand"] != "-site-total-"})
+    def series(brand: str, field: str) -> list:
+        by_month = {r["month"]: r for r in rows if r["brand"] == brand}
+        out = []
+        for m in months:
+            r = by_month.get(m)
+            v = r[field] if r and r[field] != "" else 0
+            out.append(float(v) if field == "position" else int(float(v or 0)))
+        return out
+    total_imp = series("-site-total-", "impressions")
+    branded_imp = [sum(series(b, "impressions")[i] for b in brands) for i in range(len(months))]
+    return {
+        "site": rows[0].get("site", ""),
+        "months": [month_label(m) for m in months],
+        "brands": {b: {"clicks": series(b, "clicks"),
+                       "impressions": series(b, "impressions"),
+                       "position": series(b, "position")} for b in brands},
+        "site_total": {"clicks": series("-site-total-", "clicks"),
+                       "impressions": total_imp},
+        "branded_share_of_site_impressions": [
+            r1(100 * branded_imp[i] / total_imp[i]) if total_imp[i] else 0.0
+            for i in range(len(months))],
+        "note": "your site only — GSC cannot see competitors; never present as market share",
+    }
+
+
+def load_yield(path: Path) -> dict | None:
+    """Optional layer 3: ga4.csv → yield block (organic search as a whole)."""
+    import csv as csv_mod
+    if not path.exists():
+        return None
+    rows = sorted(csv_mod.DictReader(path.open(encoding="utf-8-sig")),
+                  key=lambda r: r["month"])
+    if not rows:
+        return None
+    return {
+        "property": rows[0].get("property", ""),
+        "months": [month_label(r["month"]) for r in rows],
+        "sessions": [int(float(r["sessions"])) for r in rows],
+        "engaged_sessions": [int(float(r["engaged_sessions"])) for r in rows],
+        "key_events": [int(float(r["key_events"])) for r in rows],
+        "note": ("organic-search yield as a whole — GA4 has no query dimension, "
+                 "so this is never 'revenue from brand searches'"),
+    }
+
+
 def main() -> None:
     ap = argparse.ArgumentParser(description="compute the share-of-search snapshot")
     ap.add_argument("--workspace", type=Path, required=True)
@@ -145,6 +200,12 @@ def main() -> None:
     snapshot = compute(basket, volumes)
     snapshot["validation"] = validation
     snapshot["source"] = args.source
+    capture = load_capture(args.workspace / "gsc.csv")
+    if capture:
+        snapshot["capture"] = capture
+    yld = load_yield(args.workspace / "ga4.csv")
+    if yld:
+        snapshot["yield"] = yld
     dump_json(snapshot, out)
     f = snapshot["focus"]
     print(f"{snapshot['focus_brand']}: {f['share']}% of category demand "

@@ -88,7 +88,42 @@ def main() -> None:
         for kw, v in spread(GENERIC_TOTAL[i], GENERIC_KEYWORDS, t).items():
             volumes[(kw, month)] = v
     save_volumes(ws / "volumes.csv", volumes)
-    print(f"demo workspace → {ws} ({len(basket['keywords'])} keywords, {len(MONTHS)} months)")
+
+    # layer 2 demo — Nordvik's own GSC: branded capture rising with the share story
+    import csv
+    with (ws / "gsc.csv").open("w", newline="", encoding="utf-8") as f:
+        w = csv.DictWriter(f, fieldnames=["month", "brand", "clicks", "impressions",
+                                          "position", "site"])
+        w.writeheader()
+        site = "sc-domain:nordvik.example"
+        for i, month in enumerate(MONTHS[2:], 2):  # GSC window: 16 months
+            ndv_imp = 2600 + round(2400 * (i - 2) / 15)
+            rows = [
+                ("Nordvik", round(ndv_imp * 0.34), ndv_imp, 1.2),
+                ("Brantevik", 6 + i, 160 + 6 * i, 8.4),      # comparison queries
+                ("Fjellvik", 3, 70 + 3 * i, 9.1),
+                ("Sundby", 1, 30, 11.0),
+                ("-site-total-", round((ndv_imp + 5200 + 90 * i) * 0.12),
+                 ndv_imp + 5200 + 90 * i, ""),
+            ]
+            for brand, clicks, imp, pos in rows:
+                w.writerow({"month": month, "brand": brand, "clicks": clicks,
+                            "impressions": imp, "position": pos, "site": site})
+
+    # layer 3 demo — GA4 organic-search yield
+    with (ws / "ga4.csv").open("w", newline="", encoding="utf-8") as f:
+        w = csv.DictWriter(f, fieldnames=["month", "sessions", "engaged_sessions",
+                                          "key_events", "property"])
+        w.writeheader()
+        for i, month in enumerate(MONTHS[2:], 2):
+            sessions = 3200 + round(2200 * (i - 2) / 15)
+            w.writerow({"month": month, "sessions": sessions,
+                        "engaged_sessions": round(sessions * 0.61),
+                        "key_events": round(sessions * 0.031),
+                        "property": "000000000"})
+
+    print(f"demo workspace → {ws} ({len(basket['keywords'])} keywords, {len(MONTHS)} months, "
+          f"+ gsc.csv/ga4.csv demo layers)")
 
 
 if __name__ == "__main__":

@@ -249,6 +249,73 @@ export default function App() {
         </Card>
       </div>
 
+      {(snap.capture || snap.yield) && (
+        <>
+          <div className="micro flex items-center gap-3 px-1 pt-8 pb-3 text-faint">
+            <span>your site — capture &amp; yield</span>
+            <span className="h-px flex-1 bg-border" />
+            <span>not the market · {snap.capture?.site || snap.yield?.property}</span>
+          </div>
+          <div className="grid grid-cols-2 gap-4 max-[960px]:grid-cols-1">
+            {snap.capture && (() => {
+              const c = snap.capture
+              const fb = c.brands[snap.focus_brand]
+              const m = c.months.length - 1
+              return (
+                <Card className="gap-0 rounded-md py-0">
+                  <CardContent className="px-7 py-6">
+                    <h3 className="pb-1 text-[14.5px] font-medium">Owned capture <span className="micro pl-1 text-faint">search console</span></h3>
+                    <div className="flex items-baseline gap-6 pt-1">
+                      <div>
+                        <div className="text-[30px] font-normal tracking-[-0.02em] tabular-nums">{fb ? fb.impressions[m].toLocaleString("en") : "—"}</div>
+                        <div className="micro text-faint">branded impressions / mo</div>
+                      </div>
+                      <div>
+                        <div className="text-[30px] font-normal tracking-[-0.02em] tabular-nums">{fb ? fb.clicks[m].toLocaleString("en") : "—"}</div>
+                        <div className="micro text-faint">branded clicks</div>
+                      </div>
+                      <div>
+                        <div className="text-[30px] font-normal tracking-[-0.02em] tabular-nums">{c.branded_share_of_site_impressions[m]}%</div>
+                        <div className="micro text-faint">of site impressions</div>
+                      </div>
+                    </div>
+                    {fb && <div className="pt-3"><BrandSpark values={fb.impressions} you={false} id="capture" /></div>}
+                    <p className="micro pt-2 text-faint">{c.note}</p>
+                  </CardContent>
+                </Card>
+              )
+            })()}
+            {snap.yield && (() => {
+              const y = snap.yield
+              const m = y.months.length - 1
+              return (
+                <Card className="gap-0 rounded-md py-0">
+                  <CardContent className="px-7 py-6">
+                    <h3 className="pb-1 text-[14.5px] font-medium">Business yield <span className="micro pl-1 text-faint">ga4 · organic search</span></h3>
+                    <div className="flex items-baseline gap-6 pt-1">
+                      <div>
+                        <div className="text-[30px] font-normal tracking-[-0.02em] tabular-nums">{y.sessions[m].toLocaleString("en")}</div>
+                        <div className="micro text-faint">sessions / mo</div>
+                      </div>
+                      <div>
+                        <div className="text-[30px] font-normal tracking-[-0.02em] tabular-nums">{y.engaged_sessions[m].toLocaleString("en")}</div>
+                        <div className="micro text-faint">engaged</div>
+                      </div>
+                      <div>
+                        <div className="text-[30px] font-normal tracking-[-0.02em] tabular-nums">{y.key_events[m].toLocaleString("en")}</div>
+                        <div className="micro text-faint">key events</div>
+                      </div>
+                    </div>
+                    <div className="pt-3"><BrandSpark values={y.sessions} you={false} id="yield" /></div>
+                    <p className="micro pt-2 text-faint">{y.note}</p>
+                  </CardContent>
+                </Card>
+              )
+            })()}
+          </div>
+        </>
+      )}
+
       <footer className="micro flex flex-wrap justify-between gap-3 px-1 pt-7 text-faint">
         <span>
           <span className={v.errors.length === 0 ? "text-acid" : "text-coral"}>

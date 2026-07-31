@@ -23,6 +23,9 @@ assert {b["name"]: b["share"] for b in s["brands"]} == \
     {"Brantevik": 47.8, "Fjellvik": 30.9, "Nordvik": 13.1, "Sundby": 8.2}, "demo shares drifted"
 assert s["focus"]["rank"] == 3 and s["focus"]["gap_to_2"] == 17.8
 assert abs(sum(b["share"] for b in s["brands"]) - 100.0) < 0.21, "shares must sum to ~100"
+assert "capture" in s and s["capture"]["site"] == "sc-domain:nordvik.example"
+assert "your site only" in s["capture"]["note"], "capture must carry its honesty note"
+assert "yield" in s and "query dimension" in s["yield"]["note"]
 PYEOF
 check "calc: demo snapshot reproduces exact shares" $?
 
